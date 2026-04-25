@@ -12,7 +12,7 @@ An investigation into how architectural transformations facilitate supply voltag
 
 ### 📁 Q2_Level_Converter
 A demonstration of static power reduction in multi-voltage domains. 
-* Interfaces a $1V$ logic domain with a $1.8V$ logic domain operating at 500MHz.
+* Interfaces a $1V$ logic domain with a $1.8V$ logic domain operating at 500MHz and 5MHz.
 * Compares a direct inverter connection vs. a Cross-Coupled PMOS Level Converter.
 * **Result:** The Level Converter successfully eliminates short-circuit current in the 1.8V domain, reducing average power consumption by roughly **40x** (from ~40.1 μW down to ~0.97 μW).
 
