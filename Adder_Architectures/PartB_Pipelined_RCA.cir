@@ -1,0 +1,105 @@
+* ============================================================
+* Part B: Pipelined 4-bit RCA (Cleaned & Fixed)
+* Technology: 180nm CMOS, VDD = 1.8V
+* ============================================================
+
+.lib "FA1bit.sub"
+.lib "180nm_bulk.lib"
+.option TEMP=27 cshunt=1f
+
+* ============================================================
+* D Flip-Flop (Master-Slave) - FIXED CLOCK ROUTING
+* 16 MOSFETs
+* ============================================================
+.SUBCKT DFF D CLK CLKB Q VDD GND
+
+* Master Latch (Transparent when CLK=0)
+M1 m_in CLK D VDD PMOS W=540n L=180n
+M2 m_in CLKB D GND NMOS W=270n L=180n
+M3 m_out m_in VDD VDD PMOS W=540n L=180n
+M4 m_out m_in GND GND NMOS W=270n L=180n
+M5 m_in CLKB m_out VDD PMOS W=540n L=180n
+M6 m_in CLK m_out GND NMOS W=270n L=180n
+
+* Slave Latch (Transparent when CLK=1)
+M7 s_in m_out VDD VDD PMOS W=540n L=180n
+M8 s_in m_out GND GND NMOS W=270n L=180n
+M9 s_out CLKB s_in VDD PMOS W=540n L=180n
+M10 s_out CLK s_in GND NMOS W=270n L=180n
+M11 Q_int s_out VDD VDD PMOS W=540n L=180n
+M12 Q_int s_out GND GND NMOS W=270n L=180n
+M13 s_out CLK Q_int VDD PMOS W=540n L=180n
+M14 s_out CLKB Q_int GND NMOS W=270n L=180n
+
+* Final Output Buffer
+M15 Q Q_int VDD VDD PMOS W=540n L=180n
+M16 Q Q_int GND GND NMOS W=270n L=180n
+
+.ENDS DFF
+
+* ============================================================
+* Power Supply and Clocks
+* ============================================================
+VDD VDD 0 DC 1.8
+VGND GND2 0 DC 0
+
+VCLK CLK 0 PULSE(0 1.8 0 100p 100p 900p 2000p)
+VCLKB CLKB 0 PULSE(1.8 0 0 100p 100p 900p 2000p)
+
+* ---- Input A[3:0] ----
+VA0 A0 0 PULSE(0 1.8 0 100p 100p 4000p 8000p)
+VA1 A1 0 PULSE(0 1.8 0 100p 100p 8000p 16000p)
+VA2 A2 0 PULSE(0 1.8 0 100p 100p 16000p 32000p)
+VA3 A3 0 PULSE(0 1.8 0 100p 100p 32000p 64000p)
+
+* ---- Input B[3:0] ----
+VB0 B0 0 PULSE(0 1.8 1000p 100p 100p 4000p 8000p)
+VB1 B1 0 PULSE(0 1.8 2000p 100p 100p 8000p 16000p)
+VB2 B2 0 PULSE(0 1.8 4000p 100p 100p 16000p 32000p)
+VB3 B3 0 PULSE(0 1.8 8000p 100p 100p 32000p 64000p)
+
+VCin Cin0 0 DC 0
+
+* ============================================================
+* PIPELINE STAGE 1: FA0 and FA1
+* ============================================================
+XFA0 A0 B0 Cin0 CLK CLKB S0 C1 VDD 0 FA1bit
+XFA1 A1 B1 C1 CLK CLKB S1 C2 VDD 0 FA1bit
+
+* ============================================================
+* PIPELINE REGISTERS (7 DFFs between Stage1 and Stage2)
+* ============================================================
+XDFF_S0 S0 CLK CLKB S0_d VDD 0 DFF
+XDFF_S1 S1 CLK CLKB S1_d VDD 0 DFF
+XDFF_C2 C2 CLK CLKB C2_d VDD 0 DFF
+XDFF_A2 A2 CLK CLKB A2_d VDD 0 DFF
+XDFF_B2 B2 CLK CLKB B2_d VDD 0 DFF
+XDFF_A3 A3 CLK CLKB A3_d VDD 0 DFF
+XDFF_B3 B3 CLK CLKB B3_d VDD 0 DFF
+
+* ============================================================
+* PIPELINE STAGE 2: FA2 and FA3 (use delayed inputs)
+* ============================================================
+XFA2 A2_d B2_d C2_d CLK CLKB S2 C3 VDD 0 FA1bit
+XFA3 A3_d B3_d C3 CLK CLKB S3 Cout_final VDD 0 FA1bit
+
+* ---- Output Load Capacitors ----
+CL_S0 S0_d 0 50f
+CL_S1 S1_d 0 50f
+CL_S2 S2 0 50f
+CL_S3 S3 0 50f
+CL_Cout Cout_final 0 50f
+
+* ============================================================
+* Simulation Commands
+* ============================================================
+.tran 400n
+
+.meas TRAN PartB_AvgPwr AVG(-I(VDD)*V(VDD)) from=10n to=400n
+
+* Stage 1 delay (Half critical path)
+.meas TRAN t_stage1 TRIG V(A0) VAL=0.9 RISE=1 TARG V(C2) VAL=0.9 RISE=1
+* Total latency (2 cycles)
+.meas TRAN t_total TRIG V(A0) VAL=0.9 RISE=1 TARG V(S3) VAL=0.9 RISE=1
+
+.end

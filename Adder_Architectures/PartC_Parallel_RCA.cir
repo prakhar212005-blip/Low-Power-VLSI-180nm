@@ -1,0 +1,132 @@
+* ============================================================
+* Part C: Parallel 4-bit RCA (Cleaned & Fixed)
+* Technology: 180nm CMOS, VDD = 1.8V
+* ============================================================
+
+.lib "FA1bit.sub"
+.lib "180nm_bulk.lib"
+.option TEMP=27 cshunt=1f
+
+* ============================================================
+* 2:1 MUX using Transmission Gates (With Output Buffers)
+* ============================================================
+.SUBCKT MUX2to1 D0 D1 SEL SELN Y VDD GND
+* When SEL=0 (SELN=1): pass D0
+M1  Y_int SEL  D0 VDD PMOS W=540n L=180n
+M2  Y_int SELN D0 GND NMOS W=270n L=180n
+* When SEL=1 (SELN=0): pass D1
+M3  Y_int SELN D1 VDD PMOS W=540n L=180n
+M4  Y_int SEL  D1 GND NMOS W=270n L=180n
+
+* Output Buffer for Crisp Signals
+M5  Y_b Y_int VDD VDD PMOS W=540n L=180n
+M6  Y_b Y_int GND GND NMOS W=270n L=180n
+M7  Y   Y_b   VDD VDD PMOS W=540n L=180n
+M8  Y   Y_b   GND GND NMOS W=270n L=180n
+.ENDS MUX2to1
+
+* ============================================================
+* Toggle FF (T-FF) to generate CLK/2 for MUX select
+* ============================================================
+.SUBCKT TFF CLK CLKB Q QN VDD GND
+* Master Latch
+M1 m_in CLK QN VDD PMOS W=540n L=180n
+M2 m_in CLKB QN GND NMOS W=270n L=180n
+M3 m_out m_in VDD VDD PMOS W=540n L=180n
+M4 m_out m_in GND GND NMOS W=270n L=180n
+M5 m_in CLKB m_out VDD PMOS W=540n L=180n
+M6 m_in CLK m_out GND NMOS W=270n L=180n
+
+* Slave Latch
+M7 s_in m_out VDD VDD PMOS W=540n L=180n
+M8 s_in m_out GND GND NMOS W=270n L=180n
+M9 s_out CLKB s_in VDD PMOS W=540n L=180n
+M10 s_out CLK s_in GND NMOS W=270n L=180n
+M11 Q_int s_out VDD VDD PMOS W=540n L=180n
+M12 Q_int s_out GND GND NMOS W=270n L=180n
+M13 s_out CLK Q_int VDD PMOS W=540n L=180n
+M14 s_out CLKB Q_int GND NMOS W=270n L=180n
+
+* Outputs
+M15 Q Q_int VDD VDD PMOS W=540n L=180n
+M16 Q Q_int GND GND NMOS W=270n L=180n
+M17 QN Q VDD VDD PMOS W=540n L=180n
+M18 QN Q GND GND NMOS W=270n L=180n
+.ENDS TFF
+
+* ============================================================
+* Power Supply and Clocks
+* ============================================================
+VDD  VDD  0  DC 1.8
+VGND GND2 0  DC 0
+
+VCLK  CLK  0  PULSE(0 1.8 0 100p 100p 900p 2000p)
+VCLKB CLKB 0  PULSE(1.8 0 0 100p 100p 900p 2000p)
+
+* ---- Unit 0 Inputs: A[3:0], B[3:0] ----
+VA0  A0  0  PULSE(0 1.8 0 100p 100p 4000p 8000p)
+VA1  A1  0  PULSE(0 1.8 0 100p 100p 8000p 16000p)
+VA2  A2  0  PULSE(0 1.8 0 100p 100p 16000p 32000p)
+VA3  A3  0  PULSE(0 1.8 0 100p 100p 32000p 64000p)
+
+VB0  B0  0  PULSE(0 1.8 1000p 100p 100p 4000p 8000p)
+VB1  B1  0  PULSE(0 1.8 2000p 100p 100p 8000p 16000p)
+VB2  B2  0  PULSE(0 1.8 4000p 100p 100p 16000p 32000p)
+VB3  B3  0  PULSE(0 1.8 8000p 100p 100p 32000p 64000p)
+VCin0 Cin0 0 DC 0
+
+* ---- Unit 1 Inputs: A'[3:0], B'[3:0] (Inverted Pattern for testing) ----
+VA0p  A0p  0  PULSE(1.8 0 0 100p 100p 4000p 8000p)
+VA1p  A1p  0  PULSE(1.8 0 0 100p 100p 8000p 16000p)
+VA2p  A2p  0  PULSE(1.8 0 0 100p 100p 16000p 32000p)
+VA3p  A3p  0  PULSE(1.8 0 0 100p 100p 32000p 64000p)
+
+VB0p  B0p  0  PULSE(1.8 0 1000p 100p 100p 4000p 8000p)
+VB1p  B1p  0  PULSE(1.8 0 2000p 100p 100p 8000p 16000p)
+VB2p  B2p  0  PULSE(1.8 0 4000p 100p 100p 16000p 32000p)
+VB3p  B3p  0  PULSE(1.8 0 8000p 100p 100p 32000p 64000p)
+VCin1 Cin1 0 DC 0
+
+* ============================================================
+* UNIT 0 & UNIT 1: Parallel 4-bit RCAs
+* ============================================================
+XFA0_U0 A0  B0  Cin0 CLK CLKB S0_U0 C1_U0 VDD 0 FA1bit
+XFA1_U0 A1  B1  C1_U0 CLK CLKB S1_U0 C2_U0 VDD 0 FA1bit
+XFA2_U0 A2  B2  C2_U0 CLK CLKB S2_U0 C3_U0 VDD 0 FA1bit
+XFA3_U0 A3  B3  C3_U0 CLK CLKB S3_U0 Cout_U0 VDD 0 FA1bit
+
+XFA0_U1 A0p B0p Cin1 CLK CLKB S0_U1 C1_U1 VDD 0 FA1bit
+XFA1_U1 A1p B1p C1_U1 CLK CLKB S1_U1 C2_U1 VDD 0 FA1bit
+XFA2_U1 A2p B2p C2_U1 CLK CLKB S2_U1 C3_U1 VDD 0 FA1bit
+XFA3_U1 A3p B3p C3_U1 CLK CLKB S3_U1 Cout_U1 VDD 0 FA1bit
+
+* ============================================================
+* Toggle FF: generates SEL = CLK/2
+* ============================================================
+XTFF CLK CLKB SEL SELN VDD 0 TFF
+
+* ============================================================
+* Output MUX: selects between Unit0 and Unit1
+* ============================================================
+XMUX_S0   S0_U0   S0_U1   SEL SELN S0_out   VDD 0 MUX2to1
+XMUX_S1   S1_U0   S1_U1   SEL SELN S1_out   VDD 0 MUX2to1
+XMUX_S2   S2_U0   S2_U1   SEL SELN S2_out   VDD 0 MUX2to1
+XMUX_S3   S3_U0   S3_U1   SEL SELN S3_out   VDD 0 MUX2to1
+XMUX_Co   Cout_U0 Cout_U1 SEL SELN Cout_out VDD 0 MUX2to1
+
+* ---- Output Load Capacitors ----
+CL_S0   S0_out   0  50f
+CL_S1   S1_out   0  50f
+CL_S2   S2_out   0  50f
+CL_S3   S3_out   0  50f
+CL_Cout Cout_out 0  50f
+
+* ============================================================
+* Simulation Commands
+* ============================================================
+.tran 400n
+
+.meas TRAN PartC_AvgPwr AVG(-I(VDD)*V(VDD)) from=10n to=400n
+.meas TRAN t_delay_U0 TRIG V(A0) VAL=0.9 RISE=1 TARG V(S3_U0) VAL=0.9 RISE=1
+
+.end

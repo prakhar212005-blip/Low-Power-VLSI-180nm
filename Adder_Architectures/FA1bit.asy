@@ -1,0 +1,43 @@
+Version 4
+SymbolType BLOCK
+LINE Normal -64 -48 -64 48
+LINE Normal -64 48 64 48
+LINE Normal 64 48 64 -48
+LINE Normal 64 -48 -64 -48
+LINE Normal -96 -32 -64 -32
+LINE Normal -96 0 -64 0
+LINE Normal -96 32 -64 32
+LINE Normal 64 -16 96 -16
+LINE Normal 64 16 96 16
+TEXT 0 0 Center 1 FA
+TEXT 0 -60 Center 1 1-bit Full Adder
+SYMATTR Prefix X
+SYMATTR SpiceModel FA1bit
+SYMATTR Description 1-bit Transmission Gate Clocked Full Adder
+PIN -96 -32 LEFT 8
+PINATTR PinName A
+PINATTR SpiceOrder 1
+PIN -96 0 LEFT 8
+PINATTR PinName B
+PINATTR SpiceOrder 2
+PIN -96 32 LEFT 8
+PINATTR PinName Cin
+PINATTR SpiceOrder 3
+PIN 96 -16 RIGHT 8
+PINATTR PinName Sum
+PINATTR SpiceOrder 4
+PIN 96 16 RIGHT 8
+PINATTR PinName Cout
+PINATTR SpiceOrder 5
+PIN 0 -80 TOP 8
+PINATTR PinName VDD
+PINATTR SpiceOrder 6
+PIN 0 80 BOTTOM 8
+PINATTR PinName GND
+PINATTR SpiceOrder 7
+PIN -32 -80 TOP 8
+PINATTR PinName CLK
+PINATTR SpiceOrder 8
+PIN 32 -80 TOP 8
+PINATTR PinName CLKB
+PINATTR SpiceOrder 9

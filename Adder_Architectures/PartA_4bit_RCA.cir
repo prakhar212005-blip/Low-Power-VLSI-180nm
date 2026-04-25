@@ -1,0 +1,50 @@
+* ============================================================
+* Part A: 4-bit Ripple Carry Adder (RCA) - TSMC 180nm
+* ============================================================
+
+.lib "FA1bit.sub"
+.lib "180nm_bulk.lib"
+.option TEMP=27
+
+VDD VDD 0 DC 1.8
+VGND GND2 0 DC 0
+
+* Clock
+VCLK CLK 0 PULSE(0 1.8 0 100p 100p 1n 2n)
+VCLKB CLKB 0 PULSE(1.8 0 0 100p 100p 1n 2n)
+
+* Inputs A (Fixed to nanoseconds for clean parsing)
+VA0 A0 0 PULSE(0 1.8 0 100p 100p 4n 8n)
+VA1 A1 0 PULSE(0 1.8 0 100p 100p 8n 16n)
+VA2 A2 0 PULSE(0 1.8 0 100p 100p 16n 32n)
+VA3 A3 0 PULSE(0 1.8 0 100p 100p 32n 64n)
+
+* Inputs B (Fixed to nanoseconds for clean parsing)
+VB0 B0 0 PULSE(0 1.8 1n 100p 100p 4n 8n)
+VB1 B1 0 PULSE(0 1.8 2n 100p 100p 8n 16n)
+VB2 B2 0 PULSE(0 1.8 4n 100p 100p 16n 32n)
+VB3 B3 0 PULSE(0 1.8 8n 100p 100p 32n 64n)
+
+VCin Cin0 0 DC 0
+
+* RCA Subcircuits
+XFA0 A0 B0 Cin0 CLK CLKB S0 C1 VDD 0 FA1bit
+XFA1 A1 B1 C1 CLK CLKB S1 C2 VDD 0 FA1bit
+XFA2 A2 B2 C2 CLK CLKB S2 C3 VDD 0 FA1bit
+XFA3 A3 B3 C3 CLK CLKB S3 Cout_final VDD 0 FA1bit
+
+* Load Capacitors
+CL_S0 S0 0 50f
+CL_S1 S1 0 50f
+CL_S2 S2 0 50f
+CL_S3 S3 0 50f
+CL_Cout Cout_final 0 50f
+
+.tran 200n
+
+* Measurements
+.meas TRAN PartA_AvgPwr AVG(-I(VDD)*V(VDD)) from=10n to=200n
+.meas TRAN t_rise_S3 TRIG V(A0) VAL=0.9 RISE=1 TARG V(S3) VAL=0.9 RISE=1
+.meas TRAN t_rise_Cout TRIG V(A0) VAL=0.9 RISE=1 TARG V(Cout_final) VAL=0.9 RISE=1
+
+.end

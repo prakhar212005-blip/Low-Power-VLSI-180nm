@@ -1,0 +1,30 @@
+LTspice 26.0.1 for Windows
+Circuit: C:\Users\prakh\OneDrive\Pictures\Screenshots\LOW power\Q1\PartA_4bit_RCA.cir
+Start Time: Fri Apr 24 23:57:10 2026
+Options:TEMP=27
+Ignoring BSIM parameter XL
+Ignoring BSIM parameter XW
+Ignoring BSIM parameter XL
+Ignoring BSIM parameter XW
+solver = Normal
+Maximum thread count: 8
+tnom = 27
+temp = 27
+method = trap
+Compress1stOrder = true
+Compress2ndOrder = true
+Warning: Pd = 0 is less than W.
+Warning: Ps = 0 is less than W.
+Warning: Pd = 0 is less than W.
+Warning: Ps = 0 is less than W.
+Direct Newton iteration succeeded in finding operating point.
+Total elapsed time: 1.509 seconds.
+
+Files loaded:
+C:\Users\prakh\OneDrive\Pictures\Screenshots\LOW power\Q1\PartA_4bit_RCA.cir
+C:\Users\prakh\OneDrive\Pictures\Screenshots\LOW power\Q1\FA1bit.sub
+C:\Users\prakh\OneDrive\Pictures\Screenshots\LOW power\Q1\180nm_bulk.lib
+
+parta_avgpwr: AVG((-I(VDD)*V(VDD)) )=0.000179951927687 FROM 1e-08 TO 2e-07
+t_rise_s3=3.85862199084e-10 FROM 5.00000019526e-11 TO 4.35862201036e-10
+t_rise_cout=1.63687782878e-09 FROM 5.00000019526e-11 TO 1.68687783073e-09

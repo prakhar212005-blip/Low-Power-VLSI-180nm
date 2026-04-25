@@ -1,0 +1,49 @@
+* ============================================================
+* Buffered TG Full Adder (28-T, Crisp Outputs)
+* Technology: TSMC 180nm
+* ============================================================
+.SUBCKT FA1bit A B Cin CLK CLKB Sum Cout VDD GND
+
+* --- 1. Input Inverters ---
+M1 An A VDD VDD PMOS W=540n L=180n
+M2 An A GND GND NMOS W=270n L=180n
+M3 Bn B VDD VDD PMOS W=540n L=180n
+M4 Bn B GND GND NMOS W=270n L=180n
+M5 Cinn Cin VDD VDD PMOS W=540n L=180n
+M6 Cinn Cin GND GND NMOS W=270n L=180n
+
+* --- 2. XOR (H = A XOR B) ---
+M7 H B A VDD PMOS W=540n L=180n
+M8 H Bn A GND NMOS W=270n L=180n
+M9 H Bn An VDD PMOS W=540n L=180n
+M10 H B An GND NMOS W=270n L=180n
+
+M11 Hn H VDD VDD PMOS W=540n L=180n
+M12 Hn H GND GND NMOS W=270n L=180n
+
+* --- 3. SUM_pre (H XOR Cin) ---
+M13 Sum_pre H Cin VDD PMOS W=540n L=180n
+M14 Sum_pre Hn Cin GND NMOS W=270n L=180n
+M15 Sum_pre Hn Cinn VDD PMOS W=540n L=180n
+M16 Sum_pre H Cinn GND NMOS W=270n L=180n
+
+* --- 4. COUT_pre (Majority Logic) ---
+M17 Cout_pre H B VDD PMOS W=540n L=180n
+M18 Cout_pre Hn B GND NMOS W=270n L=180n
+M19 Cout_pre Hn Cin VDD PMOS W=540n L=180n
+M20 Cout_pre H Cin GND NMOS W=270n L=180n
+
+* --- 5. Strong Output Buffers (Restores signal to perfect 1.8V) ---
+* Sum Buffer (Double Inverter)
+M21 S_inv Sum_pre VDD VDD PMOS W=540n L=180n
+M22 S_inv Sum_pre GND GND NMOS W=270n L=180n
+M23 Sum S_inv VDD VDD PMOS W=540n L=180n
+M24 Sum S_inv GND GND NMOS W=270n L=180n
+
+* Cout Buffer (Double Inverter)
+M25 C_inv Cout_pre VDD VDD PMOS W=540n L=180n
+M26 C_inv Cout_pre GND GND NMOS W=270n L=180n
+M27 Cout C_inv VDD VDD PMOS W=540n L=180n
+M28 Cout C_inv GND GND NMOS W=270n L=180n
+
+.ENDS FA1bit
