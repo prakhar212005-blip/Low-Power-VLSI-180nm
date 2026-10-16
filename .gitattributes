@@ -1,0 +1,2 @@
+# LTspice schematics (.asc) are misdetected as AGS Script
+*.asc linguist-detectable=false
